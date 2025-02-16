@@ -35,7 +35,7 @@ Open / Air / Under / Water, 3 simbol # - Cube/Hexagon/Stivenson/Triangle
 #define pinRed 11        //  светодиод Error пин 11
 #define ds_plus A5 //  питание + датчика DS18B20 пин A5
 #define ds_minus A3 //  питание - датчика DS18B20 пин A3
-#define name_mac "#99-20-AD-97-08-14#OWH_2" //"#D8-A0-2B-12-AF-3D#OpenWater_1" // #99-20-AD-97-08-14#OA_Cube_3 (79623320270=OpenWater_1)#D8-00-2B-12-AF-32#OA_Cube_1 // #99-20-AD-97-08-14#UW_Hehagon_2#D8-A0-2B-12-AF-3D#OpenWater_1
+#define name_mac "#99-20-AD-97-99-99#UWH_1" //"#D8-A0-2B-12-AF-3D#OpenWater_1" // #99-20-AD-97-08-14#OA_Cube_3 (79623320270=OpenWater_1)#D8-00-2B-12-AF-32#OA_Cube_1 // #99-20-AD-97-08-14#UW_Hehagon_2#D8-A0-2B-12-AF-3D#OpenWater_1
 #define tel "+79202281910"
 
 LED_Y green_led(pinGreen, 100, 50);
