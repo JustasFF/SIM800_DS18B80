@@ -12,13 +12,13 @@ Open / Air / Under / Water, 3 simbol # - Cube/Hexagon/Stivenson/Triangle
 */
 
 //#99-20-36-79-80-41#OW_Hexagon_1 (79601251768)
-//#99-20-AD-97-08-14#OW_Hexagon_2
+//#99-20-AD-97-08-14#OWH_2
 //#D8-A0-2B-12-AF-3D#OWT_1 (79623320270) скошенная коробка с сьемными боковыми панелями 
 //#D8-00-2B-12-AF-32#OAS_1 (79304045460) экран Стивенсона - окружная, действующий - годовой абонемент
 
 
 
-#include "MemoryFree.h"
+//#include "MemoryFree.h"
 #include <Uptime.h>                                          // Library To Calculate Uptime
 #include <GyverFilters.h>
 #include "LED.h"
@@ -35,11 +35,11 @@ Open / Air / Under / Water, 3 simbol # - Cube/Hexagon/Stivenson/Triangle
 #define pinRed 11        //  светодиод Error пин 11
 #define ds_plus A5 //  питание + датчика DS18B20 пин A5
 #define ds_minus A3 //  питание - датчика DS18B20 пин A3
-#define name_mac "#99-20-AD-97-99-99#UWH_1" //"#D8-A0-2B-12-AF-3D#OpenWater_1" // #99-20-AD-97-08-14#OA_Cube_3 (79623320270=OpenWater_1)#D8-00-2B-12-AF-32#OA_Cube_1 // #99-20-AD-97-08-14#UW_Hehagon_2#D8-A0-2B-12-AF-3D#OpenWater_1
+#define name_mac "#99-20-AD-97-08-14#OWH_2" //"#D8-A0-2B-12-AF-3D#OpenWater_1" // #99-20-AD-97-08-14#OA_Cube_3 (79623320270=OpenWater_1)#D8-00-2B-12-AF-32#OA_Cube_1 // #99-20-AD-97-08-14#UW_Hehagon_2#D8-A0-2B-12-AF-3D#OpenWater_1
 #define tel "+79202281910"
 
-LED_Y green_led(pinGreen, 100, 50);
-LED_Y red_led(pinRed, 100, 100);
+LED green_led(pinGreen, 100, 50);
+LED red_led(pinRed, 100, 100);
 GMedian<12, int16_t> av_v;
 
 #include <SoftwareSerial.h>
@@ -51,7 +51,7 @@ DallasTemperature sensors(&oneWire);
 Uptime uptime; 
 
 //=====================================================
-#define DEBUG                                     // Для режима отладки нужно раскомментировать эту строку
+//#define DEBUG                                     // Для режима отладки нужно раскомментировать эту строку
 
 #ifdef DEBUG                                        // В случае существования DEBUG
 #define DEBUG_PRINT(x)       Serial.print (x)       // Создаем "переадресацию" на стандартную функцию
@@ -103,7 +103,7 @@ void setup() {
   digitalWrite(ds_plus, 1); // подать питание на датчик
   digitalWrite(ds_minus, 0); //
   sensors.begin();
-  //sensors.setResolution(insideThermometer, 12);
+//  sensors.setResolution(insideThermometer, 12);
   sensors.setWaitForConversion(false);
   sensors.requestTemperatures();   // читаем температуру с датчика
   tempds0 = sensors.getTempCByIndex(0); // опросить датчик DS18B20  

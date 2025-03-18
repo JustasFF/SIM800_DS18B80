@@ -1,6 +1,6 @@
-class LED_Y {
+class LED {
   public:
-    LED_Y(byte pin, uint16_t prd_w, uint16_t prd_s) {
+    LED(byte pin, uint16_t prd_w, uint16_t prd_s) {
       _pin = pin;
       _prd_w = prd_w;
       _prd_s = prd_s;
