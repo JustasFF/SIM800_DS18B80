@@ -143,11 +143,11 @@ void loop()
     } else if (at.indexOf("OK") > -1 && modem == 4) {
       DEBUG_PRINTLN(F("AT+CGATT=1 OK"));
       delay(50);
-      SIM800.println(F("AT+CSTT=\"internet.ru\""));
+      SIM800.println(F("AT+CSTT=\"internet\""));
       modem = 5;
 
     } else if (at.indexOf("OK") > -1 && modem == 5) {
-      DEBUG_PRINTLN(F("internet.ru OK"));
+      DEBUG_PRINTLN(F("internet OK"));
       delay(50);
       SIM800.println(F("AT+CIICR"));
       modem = 6;
