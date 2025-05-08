@@ -1,3 +1,7 @@
+bool isTimeValid(time_t t) {
+    return (2147385601 > t && t > 1735689601); // Unix-время для 01.01.2020
+}
+
 void detection() {                                                      // условия проверяемые каждые  сек
   uptime.calculateUptime();
   static byte interval;
@@ -5,7 +9,7 @@ void detection() {                                                      // ус�
   delay(800);
   tempds0 = sensors.getTempCByIndex(0); // опросить датчик DS18B20
   delay(50);
-  if  (85 > tempds0 && tempds0 > -50) {
+  if  (85 > tempds0 && tempds0 > -50 && isTimeValid) {
     temp_data.temp_e = tempds0 * 1000;
     temp_data.unix_time = now() - 10800;
     green_led.blink_n(1);
@@ -49,10 +53,14 @@ void slee_P() {                                                         // ЦИ�
   uptime.calculateUptime();
   uint32_t n;
   // между снами 60.320 сек + нужный интервал сна = время между отправками
-  if (v > 4050) {
-    n = 549320; //10 minutes // средний интервал 
+  if (v > 4150) {
+    n = 251500; //5 minutes // средний интервал 
+  
+  } else if (v <= 4150 && v > 4050) {
+    n = 552000;  //10 minutes
+  
   } else if (v <= 4050 && v > 3900) {
-    n = 853930;  //15 minutes
+    n = 859500;  //15 minutes
 
   } else if (v <= 3900 && v > 3700) {
     n = 1753930;//30 minutes
@@ -115,7 +123,7 @@ String waitResponse() {                                                 // Фу�
 }
 
 long readVcc() {                                                       //функция чтения внутреннего опорного напряжения, универсальная (для всех ардуин) vbyen
-  float my_vcc_const = 1.116;   // константа вольтметра
+  float my_vcc_const = 1.094;   // константа вольтметра
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
   ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
 #elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
@@ -202,39 +210,121 @@ void printDigits(int digits) {
   Serial.print(digits);
 }
 
+//void set_data_time() { // установка времени
+//  uint32_t t;
+//  String _data_time;
+//  int16_t years = 0;
+//  int8_t month = 0;
+//  int8_t day = 0;
+//  int8_t hour = 0;
+//  int8_t minute = 0;
+//  int8_t second = 0;
+//  _data_time = sendATCommand("AT+CCLK?", true);    // Запрашиваем время
+//  _data_time.remove(0, 10);           // Remove the time from the data part
+//  years = (_data_time.substring(0, 2)).toInt();
+//  years = years + 2000;
+//  _data_time.remove(0, 3);           // Remove the time from the data part
+//  month = (_data_time.substring(0, 2)).toInt();
+//  _data_time.remove(0, 3);           // Remove the time from the data part
+//  day = (_data_time.substring(0, 2)).toInt();
+//  _data_time.remove(0, 3);           // Remove the time from the data part
+//  hour = (_data_time.substring(0, 2)).toInt();
+//  _data_time.remove(0, 3);           // Remove the time from the data part
+//  minute = (_data_time.substring(0, 2)).toInt();
+//  _data_time.remove(0, 3);           // Remove the time from the data part
+//  second = (_data_time.substring(0, 2)).toInt();
+//  t = now();
+//  setTime(hour, minute, second, day, month, years); // alternative to above, yr is 2 or 4 digit yr "04/01/01,00:00:06+12" 01/01/2004 00:00:06 //1072908007
+//  if (varS%4 != 0){
+//  t = max(t, now());
+//  setTime(t);
+//  }
+//  DEBUG_PRINTLN(F("TIME SET"));
+//
+//  return 0;
+//}
+
 void set_data_time() { // установка времени
-  uint32_t t;
   String _data_time;
-  int16_t years = 0;
+  int16_t year = 0;
   int8_t month = 0;
   int8_t day = 0;
   int8_t hour = 0;
   int8_t minute = 0;
   int8_t second = 0;
-  _data_time = sendATCommand("AT+CCLK?", true);    // Запрашиваем время
-  _data_time.remove(0, 10);           // Remove the time from the data part
-  years = (_data_time.substring(0, 2)).toInt();
-  years = years + 2000;
-  _data_time.remove(0, 3);           // Remove the time from the data part
-  month = (_data_time.substring(0, 2)).toInt();
-  _data_time.remove(0, 3);           // Remove the time from the data part
-  day = (_data_time.substring(0, 2)).toInt();
-  _data_time.remove(0, 3);           // Remove the time from the data part
-  hour = (_data_time.substring(0, 2)).toInt();
-  _data_time.remove(0, 3);           // Remove the time from the data part
-  minute = (_data_time.substring(0, 2)).toInt();
-  _data_time.remove(0, 3);           // Remove the time from the data part
-  second = (_data_time.substring(0, 2)).toInt();
-  t = now();
-  setTime(hour, minute, second, day, month, years); // alternative to above, yr is 2 or 4 digit yr "04/01/01,00:00:06+12" 01/01/2004 00:00:06 //1072908007
-  if (varS%4 != 0){
-  t = max(t, now());
-  setTime(t);
-  }
-  DEBUG_PRINTLN(F("TIME SET"));
+  bool data_valid = true; // Флаг валидности данных
 
-  return 0;
+  _data_time = sendATCommand("AT+CCLK?", true);    // Запрашиваем время
+  if (_data_time.length() < 25) { // Проверка минимальной длины ответа (пример: "+CCLK: \"24/05/03,15:30:45+12\"")
+    DEBUG_PRINTLN(F("Ошибка: неверный формат времени от модема!"));
+    return;
+  }
+
+  _data_time.remove(0, 10); // Удаляем лишнюю часть строки (оставляем "YY/MM/DD,HH:MM:SS")
+
+  // Парсинг и проверка года (формат YY, диапазон 2000-2038 или другой допустимый)
+  year = (_data_time.substring(0, 2)).toInt();
+  year += 2000;
+  if (year < 2000 || year > 2038) { // Проверка на допустимый диапазон
+    DEBUG_PRINTLN(F("Ошибка: некорректный год!"));
+    data_valid = false;
+  }
+  _data_time.remove(0, 3);
+
+  // Парсинг и проверка месяца (1-12)
+  month = (_data_time.substring(0, 2)).toInt();
+  if (month < 1 || month > 12) {
+    DEBUG_PRINTLN(F("Ошибка: некорректный месяц!"));
+    data_valid = false;
+  }
+  _data_time.remove(0, 3);
+
+  // Парсинг и проверка дня (1-31, с учетом месяца)
+  day = (_data_time.substring(0, 2)).toInt();
+  if (day < 1 || day > 31) {
+    DEBUG_PRINTLN(F("Ошибка: некорректный день!"));
+    data_valid = false;
+  } else if (month == 2 && day > 29) { // Проверка февраля (без учета високосности)
+    DEBUG_PRINTLN(F("Ошибка: в феврале не может быть больше 29 дней!"));
+    data_valid = false;
+  } else if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) { // Месяцы с 30 днями
+    DEBUG_PRINTLN(F("Ошибка: в этом месяце не может быть больше 30 дней!"));
+    data_valid = false;
+  }
+  _data_time.remove(0, 3);
+
+  // Парсинг и проверка часа (0-23)
+  hour = (_data_time.substring(0, 2)).toInt();
+  if (hour < 0 || hour > 23) {
+    DEBUG_PRINTLN(F("Ошибка: некорректный час!"));
+    data_valid = false;
+  }
+  _data_time.remove(0, 3);
+
+  // Парсинг и проверка минут (0-59)
+  minute = (_data_time.substring(0, 2)).toInt();
+  if (minute < 0 || minute > 59) {
+    DEBUG_PRINTLN(F("Ошибка: некорректные минуты!"));
+    data_valid = false;
+  }
+  _data_time.remove(0, 3);
+
+  // Парсинг и проверка секунд (0-59)
+  second = (_data_time.substring(0, 2)).toInt();
+  if (second < 0 || second > 59) {
+    DEBUG_PRINTLN(F("Ошибка: некорректные секунды!"));
+    data_valid = false;
+  }
+
+  // Если данные валидны, устанавливаем время
+  if (data_valid) {
+    setTime(hour, minute, second, day, month, year);
+    DEBUG_PRINTLN(F("TIME SET OK"));
+  } else {
+    DEBUG_PRINTLN(F("Ошибка: время не установлено из-за некорректных данных!"));
+  }
 }
+
 
 void send_eeprom() {
   String s = "";

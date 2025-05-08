@@ -1,7 +1,7 @@
 /*
  * 1. Настройка датчика на 12 бит //sensors.setResolution(insideThermometer, 12);
  * 2. Настрока SIM800:
- * 2.1. Передача времение. AT+CLTS=1;&W /-> AT+CFUN=1,1 
+ * 2.1. Передача времение. AT+CLTS=1;&W /-> AT+CFUN=1,1 // AT+CTZU=1 // AT+CTZR=0
  * 2.2. Отмена повторения кода запроса
  * 2.3. Ответ буквами
  * 2.4. ****** что-то еще
@@ -35,7 +35,7 @@ Open / Air / Under / Water, 3 simbol # - Cube/Hexagon/Stivenson/Triangle
 #define pinRed 11        //  светодиод Error пин 11
 #define ds_plus A5 //  питание + датчика DS18B20 пин A5
 #define ds_minus A3 //  питание - датчика DS18B20 пин A3
-#define name_mac "#99-20-AD-97-08-14#OWH_2" //"#D8-A0-2B-12-AF-3D#OpenWater_1" // #99-20-AD-97-08-14#OA_Cube_3 (79623320270=OpenWater_1)#D8-00-2B-12-AF-32#OA_Cube_1 // #99-20-AD-97-08-14#UW_Hehagon_2#D8-A0-2B-12-AF-3D#OpenWater_1
+#define name_mac "#99-20-36-79-80-41#OWH_1" //"#D8-A0-2B-12-AF-3D#OpenWater_1" // #99-20-AD-97-08-14#OA_Cube_3 (79623320270=OpenWater_1)#D8-00-2B-12-AF-32#OA_Cube_1 // #99-20-AD-97-08-14#UW_Hehagon_2#D8-A0-2B-12-AF-3D#OpenWater_1
 #define tel "+79202281910"
 
 LED green_led(pinGreen, 100, 50);
@@ -203,6 +203,7 @@ void loop()
       String pprt = "";
       Serial.println(name_mac); //name_mac
       DEBUG_print_eeprom();
+      uptime.calculateUptime();
       pprt += (F("\n#Temp1#"));
       pprt += (tempds0);
       pprt += (F("\n#Vbat#"));
@@ -229,8 +230,10 @@ void loop()
       modem = 0;
       SIM800.end();
       delay(50);
+      uptime.calculateUptime();
       slee_P();
       SIM800.begin(9600);
+      uptime.calculateUptime();
       delay(50);
       digitalWrite(ds_plus, 1);
       digitalWrite(ds_minus, 0); // включить питание на датчик
@@ -244,20 +247,21 @@ void loop()
       sendATCommand("AT",true); //      
 
     } else if (count_send >= 5 && modem > 1 && modem < 10){
+      uptime.calculateUptime();
+      Time2 = millis();
       EEPROM.put(address, temp_data);
       red_led.blink_n(5);
       address += sizeof(temp_data); // наращиваем адрес
       //-*-------------------------------------------------//
       digitalClockDisplay();
       delay(50);
-      Serial.println(F("ERROR SEND"));
-      Serial.print(F("at="));     // если пришло что-то другое выводим в серийный порт
-      Serial.println(at);     // если пришло что-то другое выводим в серийный порт
       modem = 0;
       sendATCommand("AT+CIPSHUT",true); // закрываем пакет
       digitalWrite(ds_plus, 0);
-      delay(50);
       digitalWrite(sim800_Vcc, 0); // sim800 включить сон и через 7 сек сам заснет // ;     // отключить питание на SIM800 // sendATCommand("AT+CSCLK=2",true);
+      Serial.println(F("ERROR SEND"));
+      Serial.print(F("at="));     // если пришло что-то другое выводим в серийный порт
+      Serial.println(at);     // если пришло что-то другое выводим в серийный порт
       delay(50);
       slee_P();
       digitalWrite(ds_plus, 1);
@@ -266,12 +270,13 @@ void loop()
       digitalWrite(sim800_pow, 1);
       power.sleepDelay(1400);
       digitalWrite(sim800_pow, 1); 
-      delay(5000);
+      power.sleepDelay(5000);
       Time1 = millis();
       count_send = 0;
       sendATCommand("AT",true); //      
       
      } else {
+      uptime.calculateUptime();
       DEBUG_PRINT(F("count_send="));
       DEBUG_PRINT(count_send);
       delay(50);
