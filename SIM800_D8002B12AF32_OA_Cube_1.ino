@@ -118,6 +118,7 @@ void setup() {
   Time2 = millis();
   null_eeprom();
   v = readVcc();
+  //set_data_time();
   }
 
 void loop()
@@ -244,7 +245,8 @@ void loop()
       power.sleepDelay(5000);
       Time1 = millis();
       varS++;
-      sendATCommand("AT",true); //      
+      sendATCommand("AT",true); //
+      set_data_time();      
 
     } else if (count_send >= 5 && modem > 1 && modem < 10){
       uptime.calculateUptime();
@@ -273,7 +275,8 @@ void loop()
       power.sleepDelay(5000);
       Time1 = millis();
       count_send = 0;
-      sendATCommand("AT",true); //      
+      sendATCommand("AT",true); //
+      set_data_time();      
       
      } else {
       uptime.calculateUptime();
